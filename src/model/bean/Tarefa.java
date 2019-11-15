@@ -2,9 +2,18 @@ package model.bean;
 
 public class Tarefa {
 
-	public enum Prioridade { ALTA, MEDIA, BAIXA }
-	public enum Estado { NOVA, ANDAMENTO, CONCLUIDA }
+	public enum Prioridade {
+		ALTA, MEDIA, BAIXA;
+		public int toInt() { return ordinal(); }
+		public static Prioridade fromInt(int p) { return values()[p]; }
+	}
+	public enum Estado {
+		NOVA, ANDAMENTO, CONCLUIDA;
+		public int toInt() { return ordinal(); }
+		public static Estado fromInt(int e) { return values()[e]; }
+	}
 
+	private int id;
 	private String titulo;
 	private String descricao;
 	private Prioridade prioridade;
@@ -13,14 +22,35 @@ public class Tarefa {
 	private Usuario proprietario;
 
 	public Tarefa(
-		String titulo, String descricao, Prioridade prioridade, int ordem, Usuario proprietario
+		String titulo,
+		String descricao,
+		Prioridade prioridade,
+		int ordem,
+		Usuario proprietario
 	) {
+		this(-1, titulo, descricao, prioridade, Estado.NOVA, ordem, proprietario);
+	}
+
+	public Tarefa(
+		int id,
+		String titulo,
+		String descricao,
+		Prioridade prioridade,
+		Estado estado,
+		int ordem,
+		Usuario proprietario
+	) {
+		this.id = id;
 		this.titulo = titulo;
 		this.descricao = descricao;
 		this.prioridade = prioridade;
+		this.estado = estado;
 		this.ordem = ordem;
 		this.proprietario = proprietario;
-		this.estado = Estado.NOVA;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	public String getTitulo() {
