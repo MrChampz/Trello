@@ -5,18 +5,30 @@ import java.util.List;
 
 public class Projeto {
 
-	private static final int ID_PADRAO = -1;
+	public static final int ID_DESCONHECIDO = -1;
 
 	private int id;
 	private String nome;
 	private Usuario proprietario;
+	private List<Usuario> usuarios;
 	private List<Tarefa> tarefas;
 
 	public Projeto(String nome, Usuario proprietario) {
-		this.id = ID_PADRAO;
+		this(ID_DESCONHECIDO, nome, proprietario, new ArrayList<>(), new ArrayList<>());
+	}
+
+	public Projeto(
+		int id,
+		String nome,
+		Usuario proprietario,
+		List<Usuario> usuarios,
+		List<Tarefa> tarefas
+	) {
+		this.id = id;
 		this.nome = nome;
 		this.proprietario = proprietario;
-		this.tarefas = new ArrayList<>();
+		this.usuarios = usuarios;
+		this.tarefas = tarefas;
 	}
 
 	public int getId() {
@@ -33,6 +45,14 @@ public class Projeto {
 
 	public Usuario getProprietario() {
 		return proprietario;
+	}
+
+	public List<Usuario> getUsuarios() {
+		return usuarios;
+	}
+
+	public void setUsuarios(List<Usuario> usuarios) {
+		this.usuarios = usuarios;
 	}
 
 	public List<Tarefa> getTarefas() {

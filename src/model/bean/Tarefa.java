@@ -13,6 +13,8 @@ public class Tarefa {
 		public static Estado fromInt(int e) { return values()[e]; }
 	}
 
+	public static final int ID_DESCONHECIDO = -1;
+
 	private int id;
 	private String titulo;
 	private String descricao;
@@ -28,7 +30,7 @@ public class Tarefa {
 		int ordem,
 		Usuario proprietario
 	) {
-		this(-1, titulo, descricao, prioridade, Estado.NOVA, ordem, proprietario);
+		this(ID_DESCONHECIDO, titulo, descricao, prioridade, Estado.NOVA, ordem, proprietario);
 	}
 
 	public Tarefa(

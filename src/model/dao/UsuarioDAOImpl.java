@@ -53,7 +53,10 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             stmt.execute();
 
             // Insere os telefones no banco
-            createTelefones(conn, usuario);
+            saveTelefones(conn, usuario);
+
+            // Fim do bloco de transação
+            conn.commit();
         } finally {
             // Retorna ao estado anterior
             conn.setAutoCommit(true);
@@ -91,6 +94,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
             // Atualiza os telefones
             updateTelefones(conn, usuario);
+
+            // Fim do bloco de transação
+            conn.commit();
         } finally {
             // Retorna ao estado anterior
             conn.setAutoCommit(true);
@@ -114,8 +120,12 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         try (PreparedStatement stmt = conn.prepareStatement(DELETE)) {
             // Define o apelido do usuário que deverá ser deletado
             stmt.setString(1, apelido);
+
             // Deleta do banco
             stmt.execute();
+
+            // Fim do bloco de transação
+            conn.commit();
         } finally {
             // Retorna ao estado anterior
             conn.setAutoCommit(true);
@@ -152,6 +162,9 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
                 // Pega os telefones do usuário
                 List<String> telefones = getTelefones(conn, apel);
+
+                // Fim do bloco de transação
+                conn.commit();
 
                 // Encerra o ResultSet
                 rs.close();
@@ -202,8 +215,12 @@ public class UsuarioDAOImpl implements UsuarioDAO {
                 usuarios.add(new Usuario(apelido, nome, email, senha, foto, telefones));
             }
 
+            // Fim do bloco de transação
+            conn.commit();
+
             // Encerra o ResultSet
             rs.close();
+
             // Retorna a lista
             return usuarios;
         } finally {
@@ -229,7 +246,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         return foto;
     }
 
-    private void createTelefones(Connection conn, Usuario usuario) throws SQLException {
+    private void saveTelefones(Connection conn, Usuario usuario) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(INSERT_TELEFONES);
 
         // Itera através da lista de telefones
@@ -252,7 +269,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         deleteTelefones(conn, usuario.getApelido());
 
         // E então, adiciona todos os novos
-        createTelefones(conn, usuario);
+        saveTelefones(conn, usuario);
     }
 
     private void deleteTelefones(Connection conn, String apelido) throws SQLException {

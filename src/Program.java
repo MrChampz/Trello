@@ -6,7 +6,6 @@ import model.dao.UsuarioDAOImpl;
 
 import javax.swing.*;
 import java.sql.SQLException;
-import java.util.List;
 
 public class Program {
 
@@ -30,8 +29,6 @@ public class Program {
             frame.setEmail(felps.getEmail());
             frame.setPass(felps.getSenha());
             frame.setFoto(felps.getFoto());
-
-            // PROJETOS
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
