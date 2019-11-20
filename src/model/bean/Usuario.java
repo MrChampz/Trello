@@ -12,9 +12,10 @@ public class Usuario {
 	private Foto foto;
 	private List<String> telefones;
 	private List<Projeto> projetos;
+	private List<Mensagem> mensagens;
 
 	public Usuario(String apelido, String nome, String email, String senha) {
-		this(apelido, nome, email, senha, null, new ArrayList<>(), new ArrayList<>());
+		this(apelido, nome, email, senha, null, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 
 	public Usuario(
@@ -25,7 +26,7 @@ public class Usuario {
 		Foto foto,
 		List<String> telefones
 	) {
-		this(apelido, nome, email, senha, foto, telefones, new ArrayList<>());
+		this(apelido, nome, email, senha, foto, telefones, new ArrayList<>(), new ArrayList<>());
 	}
 
 	public Usuario(
@@ -35,7 +36,8 @@ public class Usuario {
 		String senha,
 		Foto foto,
 		List<String> telefones,
-		List<Projeto> projetos
+		List<Projeto> projetos,
+		List<Mensagem> mensagens
 	) {
 		this.apelido = apelido;
 		this.nome = nome;
@@ -44,6 +46,7 @@ public class Usuario {
 		this.foto = foto;
 		this.telefones = telefones;
 		this.projetos = projetos;
+		this.mensagens = mensagens;
 	}
 
 	public String getApelido() {
@@ -88,5 +91,13 @@ public class Usuario {
 
 	public void setProjetos(List<Projeto> projetos) {
 		this.projetos = projetos;
+	}
+
+	public List<Mensagem> getMensagens() {
+		return mensagens;
+	}
+
+	public void setMensagens(List<Mensagem> mensagens) {
+		this.mensagens = mensagens;
 	}
 }

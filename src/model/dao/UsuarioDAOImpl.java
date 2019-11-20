@@ -2,6 +2,7 @@ package model.dao;
 
 import conn.ConnectionFactory;
 import model.bean.Foto;
+import model.bean.Mensagem;
 import model.bean.Projeto;
 import model.bean.Usuario;
 
@@ -161,9 +162,10 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             throw new SQLException("Usuário não encontrado!");
         }
 
-        // Agora recupera os projetos do usuário.
-        ProjetoDAO dao = new ProjetoDAOImpl(conn);
-        restoreProjetos(dao, usuario);
+        // Agora recupera os dados (projetos e mensagens) do usuário.
+        ProjetoDAO daoProj = new ProjetoDAOImpl(conn);
+        MensagemDAO daoMsg = new MensagemDAOImpl(conn);
+        restore(daoProj, daoMsg, usuario);
 
         // Retorna o usuário
         return usuario;
@@ -201,9 +203,10 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         rs.close();
         stmt.close();
 
-        // Agora recupera os projetos dos usuários.
-        ProjetoDAO dao = new ProjetoDAOImpl(conn);
-        for (Usuario u : usuarios) { restoreProjetos(dao, u); }
+        // Agora recupera os dados (projetos e mensagens) dos usuários.
+        ProjetoDAO daoProj = new ProjetoDAOImpl(conn);
+        MensagemDAO daoMsg = new MensagemDAOImpl(conn);
+        for (Usuario u : usuarios) { restore(daoProj, daoMsg, u); }
 
         // Retorna a lista
         return usuarios;
@@ -285,15 +288,19 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     }
 
     /*
-     *  Recupera os projetos do usuário.
+     *  Recupera os dados do usuário (projetos e mensagens).
      *  Primeiro é necessário adicioná-lo ao cache, para só então requisitar seus projetos,
      *  pois, os projetos mantém uma referência de seus usuários, e no caso de tal usuário
      *  não estar em cache, o ProjetoDAO tentará pegá-lo do banco de forma recursiva.
      */
-    private void restoreProjetos(ProjetoDAO dao, Usuario usuario) throws SQLException {
+    private void restore(ProjetoDAO daoProj, MensagemDAO daoMsg, Usuario usuario) throws SQLException {
         // Pega os projetos do usuário
-        List<Projeto> projetos = dao.getAll(usuario.getApelido());
+        List<Projeto> projetos = daoProj.getAll(usuario.getApelido());
         usuario.setProjetos(projetos);
+
+        // Pega as mensagens do usuário
+        List<Mensagem> mensagens = daoMsg.getAll(usuario.getApelido());
+        usuario.setMensagens(mensagens);
 
         // Atualiza o usuário no cache
         cache.put(usuario.getApelido(), usuario);
