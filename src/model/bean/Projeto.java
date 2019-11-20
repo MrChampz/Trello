@@ -15,6 +15,7 @@ public class Projeto {
 
 	public Projeto(String nome, Usuario proprietario) {
 		this(ID_DESCONHECIDO, nome, proprietario, new ArrayList<>(), new ArrayList<>());
+		this.usuarios.add(proprietario);
 	}
 
 	public Projeto(
@@ -35,6 +36,10 @@ public class Projeto {
 		return id;
 	}
 
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	public String getNome() {
 		return nome;
 	}
@@ -45,6 +50,10 @@ public class Projeto {
 
 	public Usuario getProprietario() {
 		return proprietario;
+	}
+
+	public void setProprietario(Usuario proprietario) {
+		this.proprietario = proprietario;
 	}
 
 	public List<Usuario> getUsuarios() {

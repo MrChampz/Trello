@@ -2,21 +2,23 @@ package model.dao;
 
 import conn.ConnectionFactory;
 import model.bean.Foto;
+import model.bean.Projeto;
 import model.bean.Usuario;
 
 import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class UsuarioDAOImpl implements UsuarioDAO {
 
-    private static final String INSERT = "INSERT INTO usuario (apelido, nome, email, senha, foto) " +
-                                         "VALUES (?,?,?,?,?)";
-    private static final String UPDATE = "UPDATE usuario SET nome = ?, senha = ?, foto = ? " +
-                                         "WHERE apelido = ?";
-    private static final String DELETE = "DELETE FROM usuario WHERE apelido = ?";
-    private static final String SELECT = "SELECT * FROM usuario WHERE apelido = ?";
+    private static final String INSERT     = "INSERT INTO usuario (apelido, nome, email, senha, foto) " +
+                                             "VALUES (?,?,?,?,?)";
+    private static final String UPDATE     = "UPDATE usuario SET nome = ?, senha = ?, foto = ? " +
+                                             "WHERE apelido = ?";
+    private static final String DELETE     = "DELETE FROM usuario WHERE apelido = ?";
+    private static final String SELECT     = "SELECT * FROM usuario WHERE apelido = ?";
     private static final String SELECT_ALL = "SELECT * FROM usuario";
 
     private static final String INSERT_TELEFONES = "INSERT INTO usuario_telefone (usuario_apelido, telefone) " +
@@ -26,209 +28,185 @@ public class UsuarioDAOImpl implements UsuarioDAO {
     private static final String SELECT_TELEFONES = "SELECT telefone FROM usuario_telefone " +
                                                    "WHERE usuario_apelido = ?";
 
+    private static HashMap<String, Usuario> cache;
+
+    private Connection conn;
+
+    public UsuarioDAOImpl(Connection conn) {
+        // Inicializa o cache
+        if (cache == null) {
+            cache = new HashMap<>();
+        }
+        this.conn = conn;
+    }
+
     @Override
     public void save(Usuario usuario) throws SQLException {
-        // Obtém a conexão com o banco
-        Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(INSERT);
 
-        // Inicio do bloco de transação
-        conn.setAutoCommit(false);
+        // Insere apelido, nome, email e senha
+        stmt.setString(1, usuario.getApelido());
+        stmt.setString(2, usuario.getNome());
+        stmt.setString(3, usuario.getEmail());
+        stmt.setString(4, usuario.getSenha());
 
-        try (PreparedStatement stmt = conn.prepareStatement(INSERT)) {
-            // Insere apelido, nome, email e senha
-            stmt.setString(1, usuario.getApelido());
-            stmt.setString(2, usuario.getNome());
-            stmt.setString(3, usuario.getEmail());
-            stmt.setString(4, usuario.getSenha());
-
-            // Insere a foto do usuário, se houver
-            if (usuario.getFoto() != null) {
-                InputStream stream = new ByteArrayInputStream(usuario.getFoto().getBinary());
-                stmt.setBinaryStream(5, stream);
-            } else {
-                stmt.setBinaryStream(5, null);
-            }
-
-            // Faz a inserção no banco
-            stmt.execute();
-
-            // Insere os telefones no banco
-            saveTelefones(conn, usuario);
-
-            // Fim do bloco de transação
-            conn.commit();
-        } finally {
-            // Retorna ao estado anterior
-            conn.setAutoCommit(true);
-            // E encerra a conexão com o banco
-            ConnectionFactory.closeConnection(conn);
+        // Insere a foto do usuário, se houver
+        if (usuario.getFoto() != null) {
+            InputStream stream = new ByteArrayInputStream(usuario.getFoto().getBinary());
+            stmt.setBinaryStream(5, stream);
+        } else {
+            stmt.setBinaryStream(5, null);
         }
+
+        // Faz a inserção no banco
+        stmt.execute();
+        stmt.close();
+
+        // Insere os telefones no banco
+        saveTelefones(usuario);
+
+        // Adiciona ao cache, para futuras buscas
+        cache.put(usuario.getApelido(), usuario);
     }
 
     @Override
     public void update(Usuario usuario) throws SQLException {
-        // Obtém a conexão com o banco
-        Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(UPDATE);
 
-        // Inicio do bloco de transação
-        conn.setAutoCommit(false);
+        // Atualiza o nome e senha
+        stmt.setString(1, usuario.getNome());
+        stmt.setString(2, usuario.getSenha());
 
-        try (PreparedStatement stmt = conn.prepareStatement(UPDATE)) {
-            // Atualiza o nome e senha
-            stmt.setString(1, usuario.getNome());
-            stmt.setString(2, usuario.getSenha());
-
-            // Atualiza a foto do usuário
-            if (usuario.getFoto() != null) {
-                InputStream stream = new ByteArrayInputStream(usuario.getFoto().getBinary());
-                stmt.setBinaryStream(3, stream);
-            } else {
-                stmt.setBinaryStream(3, null);
-            }
-
-            // Define o apelido do usuário que deverá sofrer alteração
-            stmt.setString(4, usuario.getApelido());
-
-            // Atualiza os dados no banco
-            stmt.executeUpdate();
-
-            // Atualiza os telefones
-            updateTelefones(conn, usuario);
-
-            // Fim do bloco de transação
-            conn.commit();
-        } finally {
-            // Retorna ao estado anterior
-            conn.setAutoCommit(true);
-            // E encerra a conexão com o banco
-            ConnectionFactory.closeConnection(conn);
+        // Atualiza a foto do usuário
+        if (usuario.getFoto() != null) {
+            InputStream stream = new ByteArrayInputStream(usuario.getFoto().getBinary());
+            stmt.setBinaryStream(3, stream);
+        } else {
+            stmt.setBinaryStream(3, null);
         }
+
+        // Define o apelido do usuário que deverá sofrer alteração
+        stmt.setString(4, usuario.getApelido());
+
+        // Atualiza os dados no banco
+        stmt.executeUpdate();
+        stmt.close();
+
+        // Atualiza os telefones
+        updateTelefones(usuario);
+
+        // Atualiza o usuário no cache também
+        cache.put(usuario.getApelido(), usuario);
     }
 
     @Override
     public void delete(String apelido) throws SQLException {
-        // Obtém a conexão com o banco
-        Connection conn = ConnectionFactory.getConnection();
-
-        // Inicio do bloco de transação
-        conn.setAutoCommit(false);
-
         // É necessário excluir os telefones antes
-        deleteTelefones(conn, apelido);
+        deleteTelefones(apelido);
 
         // Assim, é possível excluir o usuário da tabela também
-        try (PreparedStatement stmt = conn.prepareStatement(DELETE)) {
-            // Define o apelido do usuário que deverá ser deletado
-            stmt.setString(1, apelido);
+        PreparedStatement stmt = conn.prepareStatement(DELETE);
 
-            // Deleta do banco
-            stmt.execute();
+        // Define o apelido do usuário que deverá ser deletado
+        stmt.setString(1, apelido);
 
-            // Fim do bloco de transação
-            conn.commit();
-        } finally {
-            // Retorna ao estado anterior
-            conn.setAutoCommit(true);
-            // E encerra a conexão com o banco
-            ConnectionFactory.closeConnection(conn);
-        }
+        // Deleta do banco
+        stmt.execute();
+        stmt.close();
+
+        // Por fim, remove do cache também
+        cache.remove(apelido);
     }
 
     @Override
     public Usuario get(String apelido) throws SQLException {
-        // Obtém a conexão com o banco
-        Connection conn = ConnectionFactory.getConnection();
+        // Primeiramente, verifica no cache
+        if (cache.containsKey(apelido)) return cache.get(apelido);
 
-        // Inicio do bloco de transação
-        conn.setAutoCommit(false);
+        PreparedStatement stmt = conn.prepareStatement(SELECT);
 
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT)) {
-            // Define o apelido do usuário a ser retornado
-            stmt.setString(1, apelido);
-            // Tenta pegar o usuário no banco
-            ResultSet rs = stmt.executeQuery();
+        // Define o apelido do usuário a ser retornado
+        stmt.setString(1, apelido);
 
-            // Se houver algum resultado
-            if (rs.next()) {
-                // Pega as informações do usuário
-                String apel = rs.getString("apelido");
-                String nome = rs.getString("nome");
-                String email = rs.getString("email");
-                String senha = rs.getString("senha");
+        // Tenta pegar o usuário no banco
+        ResultSet rs = stmt.executeQuery();
 
-                // Pega a foto do usuário
-                Blob blob = rs.getBlob("foto");
-                Foto foto = getFoto(blob);
+        // Se houver algum resultado
+        Usuario usuario;
+        if (rs.next()) {
+            // Pega as informações do usuário
+            String apel = rs.getString("apelido");
+            String nome = rs.getString("nome");
+            String email = rs.getString("email");
+            String senha = rs.getString("senha");
 
-                // Pega os telefones do usuário
-                List<String> telefones = getTelefones(conn, apel);
+            // Pega a foto do usuário
+            Blob blob = rs.getBlob("foto");
+            Foto foto = getFoto(blob);
 
-                // Fim do bloco de transação
-                conn.commit();
+            // Pega os telefones do usuário
+            List<String> telefones = getTelefones(apel);
 
-                // Encerra o ResultSet
-                rs.close();
+            rs.close();
+            stmt.close();
 
-                // Retorna o usuário
-                return new Usuario(apel, nome, email, senha, foto, telefones);
-            }
+            // Adiciona o usuário ao cache
+            usuario = new Usuario(apel, nome, email, senha, foto, telefones);
+            cache.put(usuario.getApelido(), usuario);
+        } else {
+            rs.close();
+            stmt.close();
 
             // Se o fluxo de execução chegar a esse ponto, nenhum usuário foi encontrado
             throw new SQLException("Usuário não encontrado!");
-        } finally {
-            // Retorna ao estado anterior
-            conn.setAutoCommit(true);
-            // E encerra a conexão com o banco
-            ConnectionFactory.closeConnection(conn);
         }
+
+        // Agora recupera os projetos do usuário.
+        ProjetoDAO dao = new ProjetoDAOImpl(conn);
+        restoreProjetos(dao, usuario);
+
+        // Retorna o usuário
+        return usuario;
     }
 
     @Override
     public List<Usuario> getAll() throws SQLException {
-        // Obtém a conexão com o banco
-        Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(SELECT_ALL);
 
-        // Inicio do bloco de transação
-        conn.setAutoCommit(false);
+        // Pega todos os usuário contidos no banco
+        ResultSet rs = stmt.executeQuery();
 
-        try (PreparedStatement stmt = conn.prepareStatement(SELECT_ALL)) {
-            // Pega todos os usuário contidos no banco
-            ResultSet rs = stmt.executeQuery();
+        // Itera por todos os usuários retornados
+        List<Usuario> usuarios = new ArrayList<>();
+        while (rs.next()) {
+            // Pega as informações do usuário
+            String apelido = rs.getString("apelido");
+            String nome = rs.getString("nome");
+            String email = rs.getString("email");
+            String senha = rs.getString("senha");
 
-            // Itera por todos os usuários retornados
-            List<Usuario> usuarios = new ArrayList<>();
-            while (rs.next()) {
-                // Pega as informações do usuário
-                String apelido = rs.getString("apelido");
-                String nome = rs.getString("nome");
-                String email = rs.getString("email");
-                String senha = rs.getString("senha");
+            // Pega a foto do usuário
+            Blob blob = rs.getBlob("foto");
+            Foto foto = getFoto(blob);
 
-                // Pega a foto do usuário
-                Blob blob = rs.getBlob("foto");
-                Foto foto = getFoto(blob);
+            // Pega os telefones do usuário
+            List<String> telefones = getTelefones(apelido);
 
-                // Pega os telefones do usuário
-                List<String> telefones = getTelefones(conn, apelido);
-
-                // Adiciona o usuário à lista
-                usuarios.add(new Usuario(apelido, nome, email, senha, foto, telefones));
-            }
-
-            // Fim do bloco de transação
-            conn.commit();
-
-            // Encerra o ResultSet
-            rs.close();
-
-            // Retorna a lista
-            return usuarios;
-        } finally {
-            // Retorna ao estado anterior
-            conn.setAutoCommit(true);
-            // E encerra a conexão com o banco
-            ConnectionFactory.closeConnection(conn);
+            // Adiciona o usuário ao cache e à lista
+            Usuario usuario = new Usuario(apelido, nome, email, senha, foto, telefones);
+            usuarios.add(usuario);
+            cache.put(usuario.getApelido(), usuario);
         }
+
+        rs.close();
+        stmt.close();
+
+        // Agora recupera os projetos dos usuários.
+        ProjetoDAO dao = new ProjetoDAOImpl(conn);
+        for (Usuario u : usuarios) { restoreProjetos(dao, u); }
+
+        // Retorna a lista
+        return usuarios;
     }
 
     private Foto getFoto(Blob blob) throws SQLException {
@@ -246,7 +224,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         return foto;
     }
 
-    private void saveTelefones(Connection conn, Usuario usuario) throws SQLException {
+    private void saveTelefones(Usuario usuario) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(INSERT_TELEFONES);
 
         // Itera através da lista de telefones
@@ -264,15 +242,15 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         stmt.close();
     }
 
-    private void updateTelefones(Connection conn, Usuario usuario) throws SQLException {
+    private void updateTelefones(Usuario usuario) throws SQLException {
         // Deleta todos os telefones do usuário do banco
-        deleteTelefones(conn, usuario.getApelido());
+        deleteTelefones(usuario.getApelido());
 
         // E então, adiciona todos os novos
-        saveTelefones(conn, usuario);
+        saveTelefones(usuario);
     }
 
-    private void deleteTelefones(Connection conn, String apelido) throws SQLException {
+    private void deleteTelefones(String apelido) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(DELETE_TELEFONES);
 
         // Define o apelido do usuário ao qual o telefones devem ser excluídos
@@ -282,7 +260,7 @@ public class UsuarioDAOImpl implements UsuarioDAO {
         stmt.execute();
     }
 
-    private List<String> getTelefones(Connection conn, String apelido) throws SQLException {
+    private List<String> getTelefones(String apelido) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(SELECT_TELEFONES);
 
         // Define o apelido do usuário que deve ter os telefones retornados
@@ -304,5 +282,20 @@ public class UsuarioDAOImpl implements UsuarioDAO {
 
         // E retorna a lista
         return telefones;
+    }
+
+    /*
+     *  Recupera os projetos do usuário.
+     *  Primeiro é necessário adicioná-lo ao cache, para só então requisitar seus projetos,
+     *  pois, os projetos mantém uma referência de seus usuários, e no caso de tal usuário
+     *  não estar em cache, o ProjetoDAO tentará pegá-lo do banco de forma recursiva.
+     */
+    private void restoreProjetos(ProjetoDAO dao, Usuario usuario) throws SQLException {
+        // Pega os projetos do usuário
+        List<Projeto> projetos = dao.getAll(usuario.getApelido());
+        usuario.setProjetos(projetos);
+
+        // Atualiza o usuário no cache
+        cache.put(usuario.getApelido(), usuario);
     }
 }

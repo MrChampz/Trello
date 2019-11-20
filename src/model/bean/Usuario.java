@@ -14,22 +14,36 @@ public class Usuario {
 	private List<Projeto> projetos;
 
 	public Usuario(String apelido, String nome, String email, String senha) {
+		this(apelido, nome, email, senha, null, new ArrayList<>(), new ArrayList<>());
+	}
+
+	public Usuario(
+		String apelido,
+		String nome,
+		String email,
+		String senha,
+		Foto foto,
+		List<String> telefones
+	) {
+		this(apelido, nome, email, senha, foto, telefones, new ArrayList<>());
+	}
+
+	public Usuario(
+		String apelido,
+		String nome,
+		String email,
+		String senha,
+		Foto foto,
+		List<String> telefones,
+		List<Projeto> projetos
+	) {
 		this.apelido = apelido;
 		this.nome = nome;
 		this.email = email;
 		this.senha = senha;
-		this.foto = null;
-		this.telefones = new ArrayList<>();
-		this.projetos = new ArrayList<>();
-	}
-
-	public Usuario(
-		String apelido, String nome, String email, String senha,
-		Foto foto, List<String> telefones
-	) {
-		this(apelido, nome, email, senha);
 		this.foto = foto;
 		this.telefones = telefones;
+		this.projetos = projetos;
 	}
 
 	public String getApelido() {
