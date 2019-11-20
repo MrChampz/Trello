@@ -15,8 +15,8 @@ public interface ProjetoDAO {
     void save(Projeto projeto) throws SQLException;
 
     /**
-     * Altera uma projeto.
-     * @param projeto Tarefa a ser alterada, já com os dados alterados.
+     * Altera um projeto.
+     * @param projeto Projeto a ser alterado, já com os dados alterados.
      * @throws SQLException Exceção lançada caso haja algum erro na alteração.
      */
     void update(Projeto projeto) throws SQLException;
