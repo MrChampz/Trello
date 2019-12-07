@@ -1,43 +1,23 @@
-
-import com.bulenkov.darcula.DarculaLaf;
 import conn.ConnectionFactory;
-import model.bean.Mensagem;
-import model.bean.Usuario;
-import model.dao.*;
+import model.bean.Projeto;
+import model.dao.ProjetoDAO;
+import model.dao.ProjetoDAOImpl;
+import view.main.ProjectFrame;
 
-import javax.swing.*;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
 
 public class Program {
 
     public static void main(String[] args) {
         try {
-            UIManager.setLookAndFeel(new DarculaLaf());
-        } catch (UnsupportedLookAndFeelException ex) {
-            ex.printStackTrace();
-        }
-
-        TestFrame frame = new TestFrame("Trello");
-
-        try {
+            // Carrega o projeto do banco
             Connection conn = ConnectionFactory.getConnection();
+            ProjetoDAO dao = new ProjetoDAOImpl(conn);
+            Projeto projeto = dao.get(1);
 
-            // USUARIOS
-            UsuarioDAO daoUsuario = new UsuarioDAOImpl(conn);
-            Usuario felps = daoUsuario.get("felps");
-            Usuario alinee = daoUsuario.get("alinee");
-
-            frame.setNick(felps.getApelido());
-            frame.setName(felps.getNome());
-            frame.setEmail(felps.getEmail());
-            frame.setPass(felps.getSenha());
-            frame.setFoto(felps.getFoto());
-
-            ConnectionFactory.closeConnection(conn);
-        } catch (SQLException ex) {
+            ProjectFrame frame = new ProjectFrame(projeto);
+            frame.setVisible(true);
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }

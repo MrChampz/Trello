@@ -1,12 +1,15 @@
-package view;
+package view.main;
 
 import model.bean.Projeto;
+import view.common.ClickListener;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class Header {
+
+    public static final int HEIGHT = 51;
 
     private JPanel pnRoot;
 

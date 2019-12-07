@@ -1,14 +1,17 @@
-package view;
+package view.main;
 
 import model.bean.Tarefa;
+import view.common.Card;
+import view.common.MultilineLabel;
+import view.main.Indicator;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class TaskCard extends Card {
+public class TaskCard extends Card implements Scrollable {
 
-    private static final int WIDTH = 256;
+    public static final int WIDTH = 246;
     private static final int ROUND = 4;
 
     private Tarefa tarefa;
@@ -22,11 +25,42 @@ public class TaskCard extends Card {
         setupIcons();
 
         // Depois de organizar todos os componentes, define a largura
-        setWidth(WIDTH);
-        //setMinimumWidth(WIDTH);
+        setPreferredWidth(WIDTH);
+        setMinimumWidth(WIDTH);
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 10;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return visibleRect.width;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        final Container viewport = getParent();
+        return viewport.getWidth() > getMinimumWidth();
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return true;
     }
 
     private void setupIndicator() {
+        // JPanel que servirá de container pro indicador e pro seu extensor
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridBagLayout());
+        panel.setOpaque(false);
+
         // Instancia o indicador de prioridade
         Indicator ind = new Indicator();
 
@@ -43,21 +77,26 @@ public class TaskCard extends Card {
                 break;
         }
 
-        // Calcula as margens necessárias
-        int marginTop = 6;
-        int marginBottom = -3;
-        int marginLeft = 8;
-        int marginRight = WIDTH - ind.getWidth() - marginLeft;
-
-        // Configura as constraints do GridBagLayout
+        // Configura as constraints do GridBagLayout para o indicador e expansor
         GridBagConstraints constr = new GridBagConstraints();
-        constr.insets = new Insets(marginTop, marginLeft, marginBottom, marginRight);
+        constr.insets = new Insets(0, 8, 0, 0);
         constr.anchor = GridBagConstraints.PAGE_START;
         constr.gridx = 0; constr.gridy = 0;
-        constr.weightx = 1.0;
 
         // Adiciona o indicador ao card
-        add(ind.get(), constr);
+        panel.add(ind.get(), constr);
+
+        // Adiciona o expansor
+        constr.gridx = 1; constr.gridy = 0;
+        constr.weightx = 1.0;
+        panel.add(new JLabel(), constr);
+
+        // Configura as constraints do GridBagLayout para o JPanel
+        constr.insets = new Insets(6, 0, -3, 0);
+        constr.fill = GridBagConstraints.HORIZONTAL;
+        constr.gridx = 0; constr.gridy = 0;
+        constr.weightx = 1.0;
+        add(panel, constr);
     }
 
     private void setupTitle() {

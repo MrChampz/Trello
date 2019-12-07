@@ -1,6 +1,10 @@
-package view;
+package view.main;
 
 import model.bean.Tarefa;
+import view.common.MultilineLabel;
+import view.common.RoundedScrollBar;
+import view.common.Button;
+import view.common.Card;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,12 +16,12 @@ import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
 
 public class ColumnCard extends Card {
 
-    private static final int WIDTH = 272;
+    public static final int WIDTH = 272;
     private static final int ROUND = 6;
 
     private MultilineLabel lbTitle;
     private JPanel pnTasks;
-    private Button btAdd;
+    private view.common.Button btAdd;
 
     private List<Tarefa> tarefas;
 
@@ -32,7 +36,7 @@ public class ColumnCard extends Card {
         setupButton();
 
         // Depois de organizar todos os componentes, define a largura
-        setWidth(WIDTH);
+        setPreferredWidth(WIDTH);
         setMinimumWidth(WIDTH);
     }
 
@@ -43,10 +47,12 @@ public class ColumnCard extends Card {
         // Define as constraints do card
         GridBagConstraints constr = new GridBagConstraints();
         constr.insets = new Insets(4,0,4,3);
+        constr.fill = GridBagConstraints.HORIZONTAL;
         constr.gridy = tarefa.getOrdem();
+        constr.weightx = 1.0;
 
         // Adiciona o card ao layout
-        pnTasks.add(new Kard(256, 100, 4), constr);
+        pnTasks.add(new TaskCard(tarefa), constr);
 
         // Ajusta o tamanho do container
         adjustBounds();
@@ -120,17 +126,12 @@ public class ColumnCard extends Card {
     }
 
     public void adjustBounds() {
-        getParent().setPreferredSize(null);
-        getParent().revalidate();
-        getParent().doLayout();
-        getParent().repaint();
-
         // Revalida o container inteiro, assim serão recalculadas as medidas
         recalculate();
 
         int diff = lbTitle.getHeight() + btAdd.getHeight();
-        int cardHeight = getHeight();
-        int containerHeight = 917;//getParent().getHeight();
+        int cardHeight = getPreferredHeight();
+        int containerHeight = getParent().getPreferredSize().height;
         int maxHeight = containerHeight - diff;
 
         if (cardHeight > 0 && maxHeight > 0) { // TODO: Tratar melhor!
@@ -143,82 +144,5 @@ public class ColumnCard extends Card {
     private void click() {
         Tarefa t = new Tarefa(0, "Tuts tuts tuts", "T", Tarefa.Prioridade.ALTA, Tarefa.Estado.NOVA, tarefas.size(), null);
         add(t);
-    }
-
-    // TODO: Passar para o Card.
-    private class Kard extends JPanel implements Scrollable {
-
-        private int round;
-
-        public Kard(int width, int height, int round) {
-            if (width != 0 && height != 0) {
-                setPreferredSize(new Dimension(width, height));
-            }
-
-            setLayout(new GridBagLayout());
-            setForeground(Color.green);
-            setBackground(Color.white);
-            setOpaque(false);
-
-            this.round = round;
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-
-            Graphics2D graphics = (Graphics2D)g;
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            int w = getWidth();
-            int h = getHeight();
-
-            Color fgColor = getForeground();
-            if (fgColor != null) {
-                // Renderiza a sombra
-                graphics.setColor(fgColor);
-                graphics.drawRoundRect(0, 1, w - 2, h - 3, round, round);
-            }
-
-            // Renderiza o cartão
-            graphics.setColor(getBackground());
-            graphics.fillRoundRect(0, 0, w - 1, h - 2, round, round);
-        }
-
-        @Override
-        public Dimension getMinimumSize() {
-            return new Dimension(246, 100);
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            return getMinimumSize();
-        }
-
-        @Override
-        public Dimension getPreferredScrollableViewportSize() {
-            return getPreferredSize();
-        }
-
-        @Override
-        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return 10;
-        }
-
-        @Override
-        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-            return visibleRect.width;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportWidth() {
-            final Container viewport = getParent();
-            return viewport.getWidth() > getMinimumSize().width;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportHeight() {
-            return true;
-        }
     }
 }

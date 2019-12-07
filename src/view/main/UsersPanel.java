@@ -1,8 +1,11 @@
-package view;
+package view.main;
 
 import model.bean.Foto;
 import model.bean.Projeto;
 import model.bean.Usuario;
+import view.common.Button;
+import view.common.CircularImageView;
+import view.common.ClickListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -75,7 +78,7 @@ public class UsersPanel {
         constr.fill = GridBagConstraints.VERTICAL;
         constr.gridx = lastIndex;
 
-        Button btInvite = new Button("Convidar", inviteListener);
+        view.common.Button btInvite = new Button("Convidar", inviteListener);
         btInvite.setWidth(80);
         btInvite.setFont(new Font("Helvetica", Font.PLAIN, 14));
         btInvite.setColor(new Color(255, 255, 255, 51));

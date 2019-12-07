@@ -1,9 +1,14 @@
-package view;
+package view.main;
+
+import view.common.Button;
+import view.common.ClickListener;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class Toolbar {
+
+    public static final int HEIGHT = 42;
 
     private JPanel pnRoot;
 
@@ -47,7 +52,7 @@ public class Toolbar {
         constr.fill = GridBagConstraints.BOTH;
 
         // Adiciona o botão que dá acesso à página inicial
-        Button btHome = new Button(new ImageIcon("res/ic_home.png"), homeListener);
+        view.common.Button btHome = new view.common.Button(new ImageIcon("res/ic_home.png"), homeListener);
         btHome.setPreferredSize(new Dimension(32, 32));
 
         constr.insets = new Insets(4, 3, 3, 0);
@@ -55,7 +60,7 @@ public class Toolbar {
         pnRoot.add(btHome.get(), constr);
 
         // Adiciona o botão que fecha a aplicação
-        Button btClose = new Button(new ImageIcon("res/ic_close.png"), closeListener);
+        view.common.Button btClose = new Button(new ImageIcon("res/ic_close.png"), closeListener);
         btClose.setPreferredSize(new Dimension(32, 32));
 
         constr.insets = new Insets(4, 0, 3, 3);
