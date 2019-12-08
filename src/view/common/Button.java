@@ -8,6 +8,8 @@ import java.awt.event.MouseListener;
 
 public class Button implements MouseListener {
 
+    private static final int ROUND = 4;
+
     private enum State { NORMAL, HOVERED, CLICKED }
 
     private JPanel pnRoot;
@@ -17,17 +19,28 @@ public class Button implements MouseListener {
     private Color color;
     private Color hoverColor;
     private Color clickColor;
+    private int round;
 
     private ClickListener listener;
 
+    public Button(String text) {
+        this(text, null);
+    }
+
     public Button(String text, ClickListener listener) {
         this.listener = listener;
+        this.round = ROUND;
         setupButton();
         setupText(text);
     }
 
+    public Button(Icon icon) {
+        this(icon, null);
+    }
+
     public Button(Icon icon,  ClickListener listener) {
         this.listener = listener;
+        this.round = ROUND;
         setupButton();
         setupIcon(icon);
     }
@@ -58,7 +71,13 @@ public class Button implements MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        listener.onClick();
+        if (listener != null) {
+            listener.onClick();
+        }
+    }
+
+    public void setClickListener(ClickListener listener) {
+        this.listener = listener;
     }
 
     public int getWidth() {
@@ -105,6 +124,14 @@ public class Button implements MouseListener {
         this.clickColor = color;
     }
 
+    public int getRound() {
+        return round;
+    }
+
+    public void setRound(int round) {
+        this.round = round;
+    }
+
     public Component get() {
         return pnRoot;
     }
@@ -128,10 +155,11 @@ public class Button implements MouseListener {
                 }
 
                 // Renderiza o cartão
-                graphics.fillRoundRect(0, 0, w - 1, h - 1, 4, 4);
+                graphics.fillRoundRect(0, 0, w - 1, h - 1, round, round);
             }
         };
 
+        pnRoot.setLayout(new GridBagLayout());
         pnRoot.setOpaque(false);
         pnRoot.addMouseListener(this);
         pnRoot.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -152,15 +180,10 @@ public class Button implements MouseListener {
     }
 
     private void setupIcon(Icon icon) {
-        JLabel lbIcon = new JLabel();
-        lbIcon.setIcon(icon);
-        lbIcon.setVerticalAlignment(SwingConstants.CENTER);
-        lbIcon.setHorizontalAlignment(SwingConstants.CENTER);
-        lbIcon.setBorder(new EmptyBorder(-1, 0, 2, 1));
-
         GridBagConstraints constr = new GridBagConstraints();
         constr.fill = GridBagConstraints.BOTH;
 
+        JLabel lbIcon = new JLabel(icon, SwingConstants.CENTER);
         pnRoot.add(lbIcon, constr);
     }
 

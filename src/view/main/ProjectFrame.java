@@ -2,6 +2,7 @@ package view.main;
 
 import model.bean.Projeto;
 import util.ScreenUtils;
+import view.common.Toolbar;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -64,7 +65,9 @@ public class ProjectFrame extends JFrame {
         constr.gridx = 0; constr.gridy = 0;
         constr.weightx = 1.0;
 
-        Toolbar toolbar = new Toolbar(this::dispose, this::dispose);
+        Toolbar toolbar = new Toolbar();
+        toolbar.setHomeButtonClickListener(this::dispose);
+        toolbar.setCloseButtonClickListener(this::dispose);
         rootPanel.add(toolbar.get(), constr);
     }
 

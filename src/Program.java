@@ -2,7 +2,7 @@ import conn.ConnectionFactory;
 import model.bean.Projeto;
 import model.dao.ProjetoDAO;
 import model.dao.ProjetoDAOImpl;
-import view.main.ProjectFrame;
+import view.signin.SignInFrame;
 
 import java.sql.Connection;
 
@@ -15,7 +15,7 @@ public class Program {
             ProjetoDAO dao = new ProjetoDAOImpl(conn);
             Projeto projeto = dao.get(1);
 
-            ProjectFrame frame = new ProjectFrame(projeto);
+            SignInFrame frame = new SignInFrame();
             frame.setVisible(true);
         } catch (Exception ex) {
             ex.printStackTrace();
