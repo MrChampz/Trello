@@ -1,33 +1,36 @@
-package view.signin;
+package view.signup;
 
 import conn.ConnectionFactory;
+import model.bean.Foto;
 import model.bean.Usuario;
 import model.dao.UsuarioDAO;
 import model.dao.UsuarioDAOImpl;
 import util.ScreenUtils;
-import view.common.*;
+import view.common.Toolbar;
 import view.main.MainFrame;
-import view.signup.SignUpFrame;
+import view.signin.SignInFrame;
+import view.signin.SignInPanel;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
-public class SignInFrame extends JFrame {
+public class SignUpFrame extends JFrame {
 
-    private static final int WIDTH = 600;
-    private static final int HEIGHT = 400;
+    private static final int WIDTH = 400;
+    private static final int HEIGHT = 600;
 
     private JPanel rootPanel;
-    private SignInPanel signInPanel;
+    private SignUpFieldsPanel fieldsPanel;
 
-    public SignInFrame() throws IOException {
+    public SignUpFrame() throws IOException {
         setupFrame();
         setupRootPanel();
         setupToolbar();
-        setupSignInPanel();
+        setupFieldsPanel();
         center();
     }
 
@@ -52,23 +55,26 @@ public class SignInFrame extends JFrame {
         constr.gridx = 0; constr.gridy = 0;
         constr.weightx = 1.0;
 
-        Toolbar toolbar = new Toolbar(false, true, true);
+        Toolbar toolbar = new Toolbar(true, true, true);
         toolbar.setCloseButtonClickListener(this::dispose);
-        toolbar.setLogoAlignment(SwingConstants.LEADING);
+
+        toolbar.setHomeButtonClickListener(this::onBackButtonClick);
+        toolbar.setHomeButtonIcon(new ImageIcon("res/ic_back.png"));
+
         rootPanel.add(toolbar.get(), constr);
     }
 
-    private void setupSignInPanel() {
+    private void setupFieldsPanel() throws IOException {
         GridBagConstraints constr = new GridBagConstraints();
+        constr.insets = new Insets(0, 16, 16, 16);
         constr.fill = GridBagConstraints.BOTH;
         constr.weightx = 1.0; constr.weighty = 1.0;
-        constr.gridx = 0; constr.gridy = 1;
+        constr.gridy = 1;
 
-        signInPanel = new SignInPanel(rootPanel.getBackground());
-        signInPanel.setSignInButtonClickListener(this::onSignInButtonClick);
-        signInPanel.setSignUpButtonClickListener(this::onSignUpButtonClick);
+        fieldsPanel = new SignUpFieldsPanel();
+        fieldsPanel.setSignUpButtonClickListener(this::onSignUpButtonClick);
 
-        rootPanel.add(signInPanel, constr);
+        rootPanel.add(fieldsPanel, constr);
     }
 
     private void center() {
@@ -79,26 +85,30 @@ public class SignInFrame extends JFrame {
         setLocation(x, y);
     }
 
-    private void onSignInButtonClick() {
-        String email = signInPanel.getEmail();
-        String pass = signInPanel.getPassword();
-
+    private void onBackButtonClick() {
         try {
-            UsuarioDAO dao = new UsuarioDAOImpl(ConnectionFactory.getConnection());
-            Usuario usuario = dao.login(email, pass);
-            gotoMainFrame(usuario);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage());
-        }
-    }
-
-    private void onSignUpButtonClick() {
-        try {
-            SignUpFrame frame = new SignUpFrame();
+            SignInFrame frame = new SignInFrame();
             frame.setVisible(true);
             dispose();
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    private void onSignUpButtonClick() {
+        String nick = fieldsPanel.getNick();
+        String name = fieldsPanel.getNameField();
+        String email = fieldsPanel.getEmail();
+        String pass = fieldsPanel.getPassword();
+        Foto pic = fieldsPanel.getPicture();
+
+        try {
+            UsuarioDAO dao = new UsuarioDAOImpl(ConnectionFactory.getConnection());
+            Usuario usuario = new Usuario(nick, name, email, pass, pic, new ArrayList<>());
+            dao.save(usuario);
+            gotoMainFrame(usuario);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage());
         }
     }
 

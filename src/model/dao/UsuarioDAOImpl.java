@@ -14,6 +14,7 @@ import java.util.List;
 
 public class UsuarioDAOImpl implements UsuarioDAO {
 
+    private static final String LOGIN      = "SELECT * FROM usuario WHERE email = ? AND senha = ?";
     private static final String INSERT     = "INSERT INTO usuario (apelido, nome, email, senha, foto) " +
                                              "VALUES (?,?,?,?,?)";
     private static final String UPDATE     = "UPDATE usuario SET nome = ?, senha = ?, foto = ? " +
@@ -39,6 +40,56 @@ public class UsuarioDAOImpl implements UsuarioDAO {
             cache = new HashMap<>();
         }
         this.conn = conn;
+    }
+
+    @Override
+    public Usuario login(String email, String password) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement(LOGIN);
+
+        // Define o email e a senha do usuário
+        stmt.setString(1, email);
+        stmt.setString(2, password);
+
+        // Tenta pegar o usuário no banco
+        ResultSet rs = stmt.executeQuery();
+
+        // Se houver algum resultado
+        Usuario usuario;
+        if (rs.next()) {
+            // Pega as informações do usuário
+            String _nick = rs.getString("apelido");
+            String _name = rs.getString("nome");
+            String _email = rs.getString("email");
+            String _pass = rs.getString("senha");
+
+            // Pega a foto do usuário
+            Blob blob = rs.getBlob("foto");
+            Foto _pic = getFoto(blob);
+
+            // Pega os telefones do usuário
+            List<String> _phones = getTelefones(_nick);
+
+            rs.close();
+            stmt.close();
+
+            // Adiciona o usuário ao cache
+            usuario = new Usuario(_nick, _name, _email, _pass, _pic, _phones);
+            cache.put(usuario.getApelido(), usuario);
+        } else {
+            rs.close();
+            stmt.close();
+
+            // Se o fluxo de execução chegar a esse ponto, nenhum usuário foi encontrado
+            throw new SQLException("Usuário não encontrado!");
+        }
+
+        // Agora recupera os dados (projetos e mensagens) do usuário.
+        ProjetoDAO daoProj = new ProjetoDAOImpl(conn);
+        MensagemDAO daoMsg = new MensagemDAOImpl(conn);
+        restore(daoProj, daoMsg, usuario);
+
+        // Retorna o usuário
+        return usuario;
     }
 
     @Override

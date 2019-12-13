@@ -3,33 +3,33 @@ package view.common;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import static java.awt.RenderingHints.KEY_TEXT_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON;
+import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
 
-public class TextField extends JPanel {
+public class TextArea extends JPanel {
 
     private static final int WIDTH = 300;
     private static final int HEIGHT = 50;
     private static final int ROUND = 4;
 
-    private JTextField textField;
+    private JTextArea textArea;
+    private JScrollPane scroll;
 
     private int round;
     private String hint;
     private Color hintColor;
 
-    public TextField(String hint) {
+    public TextArea(String hint) {
         this(hint, "");
     }
 
-    public TextField(String hint, String text) {
+    public TextArea(String hint, String text) {
         this.round = ROUND;
         this.hint = hint;
         setupPanel();
-        setupTextField(text);
+        setupTextArea(text);
     }
 
     @Override
@@ -48,16 +48,22 @@ public class TextField extends JPanel {
         graphics.fillRoundRect(0, 0, w - 1, h - 1, round, round);
     }
 
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+        setViewportBackground(bg);
+    }
+
     public void setTextFont(Font font) {
-        textField.setFont(font);
+        textArea.setFont(font);
     }
 
     public Color getTextColor() {
-        return textField.getForeground();
+        return textArea.getForeground();
     }
 
     public void setTextColor(Color color) {
-        textField.setForeground(color);
+        textArea.setForeground(color);
     }
 
     public Color getHintColor() {
@@ -69,11 +75,11 @@ public class TextField extends JPanel {
     }
 
     public Color getSelectionColor() {
-        return textField.getSelectionColor();
+        return textArea.getSelectionColor();
     }
 
     public void setSelectionColor(Color selectionColor) {
-        textField.setSelectionColor(selectionColor);
+        textArea.setSelectionColor(selectionColor);
     }
 
     public int getRound() {
@@ -93,11 +99,11 @@ public class TextField extends JPanel {
     }
 
     public String getText() {
-        return textField.getText();
+        return textArea.getText();
     }
 
     public void setText(String text) {
-        textField.setText(text);
+        textArea.setText(text);
     }
 
     private void setupPanel() {
@@ -107,13 +113,13 @@ public class TextField extends JPanel {
         setOpaque(false);
     }
 
-    private void setupTextField(String text) {
+    private void setupTextArea(String text) {
         GridBagConstraints constr = new GridBagConstraints();
-        constr.insets = new Insets(6, 18, 6, 6);
-        constr.fill = GridBagConstraints.HORIZONTAL;
-        constr.weightx = 1.0;
+        constr.insets = new Insets(12, 18, 6, 6);
+        constr.fill = GridBagConstraints.BOTH;
+        constr.weightx = 1.0; constr.weighty = 1.0;
 
-        textField = new JTextField(text, JLabel.CENTER) {
+        textArea = new JTextArea(text) {
             @Override
             public void paint(Graphics g) {
                 super.paint(g);
@@ -121,24 +127,46 @@ public class TextField extends JPanel {
                     Graphics2D g2d = (Graphics2D)g;
                     g2d.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_ON);
 
-                    int h = getHeight();
                     Insets insets = getInsets();
                     FontMetrics fm = g.getFontMetrics();
 
                     g.setColor(hintColor);
-                    g.drawString(hint, insets.left, (h / 2) + (fm.getAscent() / 2) - 2);
+                    g.drawString(hint, insets.left, insets.top + fm.getAscent());
                 }
             }
         };
 
-        textField.setOpaque(false);
-        textField.setBorder(new EmptyBorder(0, 0, 0, 0));
+        textArea.setOpaque(false);
+        textArea.setBorder(new EmptyBorder(0, 0, 0, 6));
+        textArea.setAlignmentY(CENTER_ALIGNMENT);
+        textArea.setWrapStyleWord(true);
+        textArea.setLineWrap(true);
 
         setTextFont(new Font("Helvetica", Font.PLAIN, 20));
         setTextColor(Color.black);
         setHintColor(new Color(117, 117, 117));
         setSelectionColor(new Color(0, 0, 0, 51));
 
-        add(textField, constr);
+        setupScrollPane();
+
+        add(scroll, constr);
+    }
+
+    private void setupScrollPane() {
+        scroll = new JScrollPane(textArea);
+        scroll.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBar(new RoundedScrollBar());
+        scroll.setBorder(null);
+
+        // Altera o background da viewport
+        setViewportBackground(getBackground());
+    }
+
+    private void setViewportBackground(Color bg) {
+        if (scroll != null) {
+            final JViewport viewport = scroll.getViewport();
+            viewport.setBackground(bg);
+            scroll.setViewport(viewport);
+        }
     }
 }

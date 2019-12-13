@@ -1,6 +1,7 @@
 package view.signin;
 
 import view.common.Button;
+import view.common.ClickListener;
 import view.common.TextField;
 import view.common.PasswordField;
 
@@ -8,6 +9,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public class SignInFieldsPanel extends JPanel {
+
+    private TextField emailField;
+    private PasswordField passField;
+    private Button signInButton;
+    private Button signUpButton;
 
     public SignInFieldsPanel(Color bgColor) {
         setupPanel();
@@ -18,6 +24,22 @@ public class SignInFieldsPanel extends JPanel {
         setupSignInButton();
         setupExpansor(5);
         setupSignUpButton(bgColor);
+    }
+
+    public String getEmail() {
+        return emailField.getText();
+    }
+
+    public String getPassword() {
+        return passField.getText();
+    }
+
+    public void setSignInButtonClickListener(ClickListener listener) {
+        signInButton.setClickListener(listener);
+    }
+
+    public void setSignUpButtonClickListener(ClickListener listener) {
+        signUpButton.setClickListener(listener);
     }
 
     private void setupPanel() {
@@ -43,7 +65,7 @@ public class SignInFieldsPanel extends JPanel {
         constr.insets = new Insets(0, 0, 5, 0);
         constr.gridy = 2;
 
-        TextField emailField = new TextField("Email");
+        emailField = new TextField("Email");
         emailField.setRound(8);
 
         add(emailField, constr);
@@ -54,7 +76,7 @@ public class SignInFieldsPanel extends JPanel {
         constr.insets = new Insets(0, 0, 5, 0);
         constr.gridy = 3;
 
-        PasswordField passField = new PasswordField("Senha");
+        passField = new PasswordField("Senha");
         passField.setRound(8);
 
         add(passField, constr);
@@ -64,7 +86,7 @@ public class SignInFieldsPanel extends JPanel {
         GridBagConstraints constr = new GridBagConstraints();
         constr.gridy = 4;
 
-        Button signInButton = new Button("Entrar");
+        signInButton = new Button("Entrar");
         signInButton.setPreferredSize(new Dimension(300, 50));
         signInButton.setFont(new Font("Helvetica", Font.PLAIN, 25));
         signInButton.setRound(8);
@@ -81,7 +103,7 @@ public class SignInFieldsPanel extends JPanel {
         GridBagConstraints constr = new GridBagConstraints();
         constr.gridy = 6;
 
-        Button signUpButton = new Button("Cadastrar-se");
+        signUpButton = new Button("Cadastrar-se");
         signUpButton.setPreferredSize(new Dimension(300, 50));
         signUpButton.setFont(new Font("Helvetica", Font.PLAIN, 25));
         signUpButton.setRound(8);

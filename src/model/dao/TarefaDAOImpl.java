@@ -45,7 +45,14 @@ public class TarefaDAOImpl implements TarefaDAO {
         // Faz a inserção no banco
         stmt.execute();
 
-        // Encerra o stmt
+        // Salva o id gerado
+        int id = Tarefa.ID_DESCONHECIDO;
+        ResultSet keys = stmt.getGeneratedKeys();
+        if (keys.next()) id =  keys.getInt(1);
+        tarefa.setId(id);
+
+        // Encerra tudo
+        keys.close();
         stmt.close();
     }
 

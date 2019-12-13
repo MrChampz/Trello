@@ -1,4 +1,4 @@
-package view.main;
+package view.project;
 
 import model.bean.Projeto;
 import view.common.ClickListener;
@@ -15,12 +15,12 @@ public class Header {
 
     private Projeto projeto;
 
-    public Header(Projeto projeto, ClickListener inviteListener) {
+    public Header(Projeto projeto) {
         this.projeto = projeto;
         setupPanel();
         setupTitle();
         setupDivisor();
-        setupUsersPanel(inviteListener);
+        setupUsersPanel();
         setupExpansor();
     }
 
@@ -63,8 +63,8 @@ public class Header {
         pnRoot.add(lbDivisor, constr);
     }
 
-    private void setupUsersPanel(ClickListener inviteListener) {
-        UsersPanel pnUsers = new UsersPanel(projeto, inviteListener);
+    private void setupUsersPanel() {
+        UsersPanel pnUsers = new UsersPanel(projeto);
 
         GridBagConstraints constr = new GridBagConstraints();
         constr.insets = new Insets(8, 0, 8, 0);

@@ -1,15 +1,35 @@
 package view.signin;
 
+import view.common.ClickListener;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class SignInPanel extends JPanel {
+
+    private SignInFieldsPanel fieldsPanel;
 
     public SignInPanel(Color bgColor) {
         setupPanel();
         setupLogoPanel();
         setupSeparator();
         setupFieldsPanel(bgColor);
+    }
+
+    public String getEmail() {
+        return fieldsPanel.getEmail();
+    }
+
+    public String getPassword() {
+        return fieldsPanel.getPassword();
+    }
+
+    public void setSignInButtonClickListener(ClickListener listener) {
+        fieldsPanel.setSignInButtonClickListener(listener);
+    }
+
+    public void setSignUpButtonClickListener(ClickListener listener) {
+        fieldsPanel.setSignUpButtonClickListener(listener);
     }
 
     private void setupPanel() {
@@ -46,6 +66,7 @@ public class SignInPanel extends JPanel {
         constr.weighty = 1.0;
         constr.gridx = 2;
 
-        add(new SignInFieldsPanel(bgColor), constr);
+        fieldsPanel = new SignInFieldsPanel(bgColor);
+        add(fieldsPanel, constr);
     }
 }

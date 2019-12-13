@@ -2,34 +2,35 @@ package view.common;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.plaf.basic.BasicComboBoxUI;
+import javax.swing.plaf.metal.MetalComboBoxUI;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import static java.awt.RenderingHints.KEY_TEXT_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON;
 
-public class TextField extends JPanel {
+public class ComboBox extends JPanel {
 
     private static final int WIDTH = 300;
     private static final int HEIGHT = 50;
     private static final int ROUND = 4;
 
-    private JTextField textField;
+    private JComboBox comboBox;
 
     private int round;
     private String hint;
     private Color hintColor;
 
-    public TextField(String hint) {
-        this(hint, "");
+    public ComboBox(String hint) {
+        this(hint, new DefaultComboBoxModel());
     }
 
-    public TextField(String hint, String text) {
+    public ComboBox(String hint, ComboBoxModel model) {
         this.round = ROUND;
         this.hint = hint;
         setupPanel();
-        setupTextField(text);
+        setupComboBox(model);
     }
 
     @Override
@@ -48,16 +49,22 @@ public class TextField extends JPanel {
         graphics.fillRoundRect(0, 0, w - 1, h - 1, round, round);
     }
 
+    @Override
+    public void setBackground(Color bg) {
+        super.setBackground(bg);
+        setComboBoxBackground(bg);
+    }
+
     public void setTextFont(Font font) {
-        textField.setFont(font);
+        comboBox.setFont(font);
     }
 
     public Color getTextColor() {
-        return textField.getForeground();
+        return comboBox.getForeground();
     }
 
     public void setTextColor(Color color) {
-        textField.setForeground(color);
+        comboBox.setForeground(color);
     }
 
     public Color getHintColor() {
@@ -66,14 +73,6 @@ public class TextField extends JPanel {
 
     public void setHintColor(Color hintColor) {
         this.hintColor = hintColor;
-    }
-
-    public Color getSelectionColor() {
-        return textField.getSelectionColor();
-    }
-
-    public void setSelectionColor(Color selectionColor) {
-        textField.setSelectionColor(selectionColor);
     }
 
     public int getRound() {
@@ -92,12 +91,12 @@ public class TextField extends JPanel {
         this.hint = hint;
     }
 
-    public String getText() {
-        return textField.getText();
+    public Object getSelectedItem() {
+        return comboBox.getSelectedItem();
     }
 
-    public void setText(String text) {
-        textField.setText(text);
+    public void setSelectedItem(Object item) {
+        comboBox.setSelectedItem(item);
     }
 
     private void setupPanel() {
@@ -107,17 +106,17 @@ public class TextField extends JPanel {
         setOpaque(false);
     }
 
-    private void setupTextField(String text) {
+    private void setupComboBox(ComboBoxModel model) {
         GridBagConstraints constr = new GridBagConstraints();
         constr.insets = new Insets(6, 18, 6, 6);
         constr.fill = GridBagConstraints.HORIZONTAL;
         constr.weightx = 1.0;
 
-        textField = new JTextField(text, JLabel.CENTER) {
+        comboBox = new JComboBox(model) {
             @Override
             public void paint(Graphics g) {
                 super.paint(g);
-                if (getText().isEmpty()) {
+                if (getSelectedItem() == null || getSelectedIndex() == -1) {
                     Graphics2D g2d = (Graphics2D)g;
                     g2d.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_ON);
 
@@ -131,14 +130,32 @@ public class TextField extends JPanel {
             }
         };
 
-        textField.setOpaque(false);
-        textField.setBorder(new EmptyBorder(0, 0, 0, 0));
+        comboBox.setUI(new BasicComboBoxUI() {
+            @Override
+            protected JButton createArrowButton() {
+                Icon icon = new ImageIcon("res/ic_dropdown.png");
+                JButton arrowButton = new JButton(icon);
+                arrowButton.setBackground(new Color(255, 255, 255, 0));
+                arrowButton.setBorder(new EmptyBorder(0, 0, 0, 0));
+                return arrowButton;
+            }
+        });
+
+        comboBox.setOpaque(false);
+        comboBox.setBorder(new EmptyBorder(0, 0, 0, 0));
+        comboBox.setSelectedItem(null);
+        setComboBoxBackground(getBackground());
 
         setTextFont(new Font("Helvetica", Font.PLAIN, 20));
         setTextColor(Color.black);
         setHintColor(new Color(117, 117, 117));
-        setSelectionColor(new Color(0, 0, 0, 51));
 
-        add(textField, constr);
+        add(comboBox, constr);
+    }
+
+    private void setComboBoxBackground(Color bg) {
+        if (comboBox != null) {
+            comboBox.setBackground(bg);
+        }
     }
 }

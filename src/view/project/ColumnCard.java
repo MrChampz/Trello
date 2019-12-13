@@ -1,6 +1,8 @@
-package view.main;
+package view.project;
 
+import model.bean.Projeto;
 import model.bean.Tarefa;
+import model.bean.Usuario;
 import view.common.MultilineLabel;
 import view.common.RoundedScrollBar;
 import view.common.Button;
@@ -19,19 +21,33 @@ public class ColumnCard extends Card {
     public static final int WIDTH = 272;
     private static final int ROUND = 6;
 
+    private static final String TITLE_NOVA = "Novas";
+    private static final String TITLE_ANDAMENTO = "Em andamento";
+    private static final String TITLE_CONCLUIDA = "Concluídas";
+
+    public enum Tipo { NOVA, ANDAMENTO, CONCLUIDA }
+
     private MultilineLabel lbTitle;
     private JPanel pnTasks;
-    private view.common.Button btAdd;
+    private Button btAdd;
 
+    private Tipo tipo;
+    private int lastOrderIndex = 0;
+
+    private Usuario usuario;
+    private Projeto projeto;
     private List<Tarefa> tarefas;
 
-    public ColumnCard(String title) {
-        super(ROUND, new Color(235, 236, 240), null);
+    public ColumnCard(Usuario usuario, Projeto projeto, Tipo tipo) {
+        super(ROUND, new Color(235, 236, 240));
+        this.usuario = usuario;
+        this.projeto = projeto;
+        this.tipo = tipo;
 
         // Inicializa a lista de tarefas vazia
         tarefas = new ArrayList<>();
 
-        setupTitle(title);
+        setupTitle();
         setupTaskPanel();
         setupButton();
 
@@ -48,21 +64,66 @@ public class ColumnCard extends Card {
         GridBagConstraints constr = new GridBagConstraints();
         constr.insets = new Insets(4,0,4,3);
         constr.fill = GridBagConstraints.HORIZONTAL;
-        constr.gridy = tarefa.getOrdem();
+        constr.gridy = lastOrderIndex = tarefa.getOrdem();
         constr.weightx = 1.0;
 
         // Adiciona o card ao layout
-        pnTasks.add(new TaskCard(tarefa), constr);
+        TaskCard card = new TaskCard(tarefa);
+        card.setClickListener(this::onTaskClick);
+        pnTasks.add(card, constr);
 
         // Ajusta o tamanho do container
         adjustBounds();
+    }
+
+    public void update(Tarefa tarefa) {
+        if (tarefas.contains(tarefa)) {
+            int index = tarefas.indexOf(tarefa);
+
+            // Recupara o card e atualiza
+            TaskCard card = (TaskCard)pnTasks.getComponent(index);
+            card.update();
+
+            // Ajusta o tamanho do container
+            adjustBounds();
+        }
+    }
+
+    public void remove(Tarefa tarefa) {
+        if (tarefas.contains(tarefa)) {
+            // Recupera o indice da tarefa
+            int index = tarefas.indexOf(tarefa);
+
+            // Remove da lista
+            tarefas.remove(tarefa);
+
+            // Remove do panel
+            pnTasks.remove(index);
+
+            // Ajusta o tamanho do container
+            adjustBounds();
+        }
     }
 
     public void setTitle(String title) {
         lbTitle.setText(title);
     }
 
-    private void setupTitle(String title) {
+    private void setupTitle() {
+        String title = "";
+
+        switch (tipo) {
+            case NOVA:
+                title = TITLE_NOVA;
+                break;
+            case ANDAMENTO:
+                title = TITLE_ANDAMENTO;
+                break;
+            case CONCLUIDA:
+                title = TITLE_CONCLUIDA;
+                break;
+        }
+
         // Instancia o label do título
         lbTitle = new MultilineLabel(title);
 
@@ -102,14 +163,14 @@ public class ColumnCard extends Card {
         JScrollPane scroll = new JScrollPane(pnTasks);
         scroll.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setVerticalScrollBar(new RoundedScrollBar());
-        scroll.setHorizontalScrollBar(new RoundedScrollBar());
         scroll.setBorder(null);
 
         add(scroll, constr);
     }
 
     private void setupButton() {
-        btAdd = new Button("Adicionar outro cartão", this::click);
+        btAdd = new Button("Adicionar outro cartão", this::onButtonClick);
+        btAdd.setBorder(new EmptyBorder(8, 8, 8, 8));
         btAdd.setFont(new Font("Helvetica", Font.PLAIN, 14));
         btAdd.setTextColor(new Color(94, 108, 132));
 
@@ -141,8 +202,45 @@ public class ColumnCard extends Card {
         }
     }
 
-    private void click() {
-        Tarefa t = new Tarefa(0, "Tuts tuts tuts", "T", Tarefa.Prioridade.ALTA, Tarefa.Estado.NOVA, tarefas.size(), null);
-        add(t);
+    private void onTaskClick(Tarefa tarefa) {
+        openTaskFrame(tarefa);
+    }
+
+    private void onButtonClick() {
+        try {
+            Tarefa tarefa = new Tarefa(
+                "",
+                "",
+                null,
+                lastOrderIndex + 1,
+                usuario
+            );
+
+            switch (tipo) {
+                case NOVA:
+                    tarefa.setEstado(Tarefa.Estado.NOVA);
+                    break;
+                case ANDAMENTO:
+                    tarefa.setEstado(Tarefa.Estado.ANDAMENTO);
+                    break;
+                case CONCLUIDA:
+                    tarefa.setEstado(Tarefa.Estado.CONCLUIDA);
+                    break;
+            }
+
+            openTaskFrame(tarefa);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void openTaskFrame(Tarefa tarefa) {
+        try {
+            TaskFrame frame = new TaskFrame(this, projeto, tarefa);
+            frame.setVisible(true);
+            frame.requestFocus();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

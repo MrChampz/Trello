@@ -1,6 +1,8 @@
-package view.main;
+package view.project;
 
 import model.bean.Projeto;
+import model.bean.Usuario;
+import util.ColorUtils;
 import util.ScreenUtils;
 import view.common.Toolbar;
 
@@ -14,16 +16,20 @@ public class ProjectFrame extends JFrame {
 
     private JPanel rootPanel;
 
+    private Color background;
     private Rectangle maxWndSize;
     private int maxTaskPanelHeight;
 
+    private Usuario usuario;
     private Projeto projeto;
 
-    public ProjectFrame(Projeto projeto) throws IOException {
+    public ProjectFrame(Usuario usuario, Projeto projeto) throws IOException {
+        this.usuario = usuario;
         this.projeto = projeto;
 
         calculateBounds();
         setupFrame();
+        setupBackground();
         setupRootPanel();
     }
 
@@ -49,10 +55,14 @@ public class ProjectFrame extends JFrame {
         setIconImage(ImageIO.read(new File("res/trello_icon.png")));
     }
 
+    private void setupBackground() {
+        background = ColorUtils.toAwtColor(projeto.getColor());
+    }
+
     private void setupRootPanel() {
         rootPanel = new JPanel();
         rootPanel.setLayout(new GridBagLayout());
-        rootPanel.setBackground(new Color(50, 168, 82));
+        rootPanel.setBackground(background);
         setupToolbar();
         setupHeader();
         setupTasksPanel();
@@ -77,7 +87,7 @@ public class ProjectFrame extends JFrame {
         constr.gridx = 0; constr.gridy = 1;
         constr.weightx = 1.0;
 
-        Header header = new Header(projeto, () -> {});
+        Header header = new Header(projeto);
         rootPanel.add(header.get(), constr);
     }
 
@@ -87,7 +97,7 @@ public class ProjectFrame extends JFrame {
         constr.gridx = 0; constr.gridy = 2;
         constr.weightx = 1.0; constr.weighty = 1.0;
 
-        TasksPanel tasksPanel = new TasksPanel(projeto, maxTaskPanelHeight);
+        TasksPanel tasksPanel = new TasksPanel(usuario, projeto, maxTaskPanelHeight);
         rootPanel.add(tasksPanel.get(), constr);
     }
 }

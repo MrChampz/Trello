@@ -10,25 +10,26 @@ public class Projeto {
 	private int id;
 	private String nome;
 	private Usuario proprietario;
-	private List<Usuario> usuarios;
+	private List<Usuario> membros;
 	private List<Tarefa> tarefas;
+	private Color color;
 
 	public Projeto(String nome, Usuario proprietario) {
 		this(ID_DESCONHECIDO, nome, proprietario, new ArrayList<>(), new ArrayList<>());
-		this.usuarios.add(proprietario);
+		this.membros.add(proprietario);
 	}
 
 	public Projeto(
 		int id,
 		String nome,
 		Usuario proprietario,
-		List<Usuario> usuarios,
+		List<Usuario> membros,
 		List<Tarefa> tarefas
 	) {
 		this.id = id;
 		this.nome = nome;
 		this.proprietario = proprietario;
-		this.usuarios = usuarios;
+		this.membros = membros;
 		this.tarefas = tarefas;
 	}
 
@@ -56,12 +57,12 @@ public class Projeto {
 		this.proprietario = proprietario;
 	}
 
-	public List<Usuario> getUsuarios() {
-		return usuarios;
+	public List<Usuario> getMembros() {
+		return membros;
 	}
 
-	public void setUsuarios(List<Usuario> usuarios) {
-		this.usuarios = usuarios;
+	public void setMembros(List<Usuario> membros) {
+		this.membros = membros;
 	}
 
 	public List<Tarefa> getTarefas() {
@@ -70,5 +71,13 @@ public class Projeto {
 
 	public void setTarefas(List<Tarefa> tarefas) {
 		this.tarefas = tarefas;
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
 	}
 }

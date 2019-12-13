@@ -197,7 +197,7 @@ public class ProjetoDAOImpl implements ProjetoDAO {
                 projeto = pool.get(id);
                 projeto.setNome(nome);
                 projeto.setProprietario(proprietario);
-                projeto.setUsuarios(participantes);
+                projeto.setMembros(participantes);
                 projeto.setTarefas(tarefas);
             } else {
                 // Caso contrário, cria um novo
@@ -271,7 +271,7 @@ public class ProjetoDAOImpl implements ProjetoDAO {
     private void saveUsuarios(Projeto projeto) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement(INSERT_USUARIO);
 
-        for (Usuario usuario : projeto.getUsuarios()) {
+        for (Usuario usuario : projeto.getMembros()) {
             // Insere o id do projeto e o apelido do usuário participante
             stmt.setInt(1, projeto.getId());
             stmt.setString(2, usuario.getApelido());
@@ -352,7 +352,7 @@ public class ProjetoDAOImpl implements ProjetoDAO {
         pool.put(projeto.getId(), projeto);
 
         // Itera por todos os usuários participantes do projeto
-        for (Usuario u : projeto.getUsuarios()) {
+        for (Usuario u : projeto.getMembros()) {
             if (cache.containsKey(u.getApelido())) {
                 // Se já houver algum projeto do usuário, adiciona à lista
                 cache.get(u.getApelido()).put(projeto.getId(), projeto);

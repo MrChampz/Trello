@@ -1,7 +1,8 @@
-package view.main;
+package view.project;
 
 import model.bean.Projeto;
 import model.bean.Tarefa;
+import model.bean.Usuario;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,10 +13,12 @@ public class TasksPanel {
 
     private JPanel pnRoot;
 
+    private Usuario usuario;
     private Projeto projeto;
     private int maxHeight;
 
-    public TasksPanel(Projeto projeto, int maxHeight) {
+    public TasksPanel(Usuario usuario, Projeto projeto, int maxHeight) {
+        this.usuario = usuario;
         this.projeto = projeto;
         this.maxHeight = maxHeight;
         setupPanel();
@@ -34,15 +37,15 @@ public class TasksPanel {
     }
 
     private void setupColumns() {
-        ColumnCard ccNovas = createColumn("Novas", 0);
-        ColumnCard ccAndamento = createColumn("Em andamento", 1);
-        ColumnCard ccConcluidas = createColumn("Concluídas", 2);
+        ColumnCard columnNovas = createColumn(ColumnCard.Tipo.NOVA, 0);
+        ColumnCard columnAndamento = createColumn(ColumnCard.Tipo.ANDAMENTO, 1);
+        ColumnCard columnConcluidas = createColumn(ColumnCard.Tipo.CONCLUIDA, 2);
 
         for (Tarefa t : projeto.getTarefas()) {
             switch (t.getEstado()) {
-                case NOVA: ccNovas.add(t); break;
-                case ANDAMENTO: ccAndamento.add(t); break;
-                case CONCLUIDA: ccConcluidas.add(t); break;
+                case NOVA: columnNovas.add(t); break;
+                case ANDAMENTO: columnAndamento.add(t); break;
+                case CONCLUIDA: columnConcluidas.add(t); break;
             }
         }
     }
@@ -57,12 +60,12 @@ public class TasksPanel {
         pnRoot.add(new JLabel(), constr);
     }
 
-    private ColumnCard createColumn(String title, int gridx) {
+    private ColumnCard createColumn(ColumnCard.Tipo tipo, int gridx) {
         // Constraints do layout
         GridBagConstraints constr = new GridBagConstraints();
 
         // Cria o card com o título
-        ColumnCard column = new ColumnCard(title);
+        ColumnCard column = new ColumnCard(usuario, projeto, tipo);
 
         // Define o container do card
         int pnColumnHeight = maxHeight - MARGIN_BOTTOM;

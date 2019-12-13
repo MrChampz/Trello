@@ -1,6 +1,7 @@
 package view.common;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -14,6 +15,7 @@ public class Button implements MouseListener {
 
     private JPanel pnRoot;
     private JLabel lbText;
+    private JLabel lbIcon;
 
     private State state;
     private Color color;
@@ -76,6 +78,18 @@ public class Button implements MouseListener {
         }
     }
 
+    public void setIcon(Icon icon) {
+        if (lbIcon != null) {
+            lbIcon.setIcon(icon);
+        }
+    }
+
+    public void setText(String text) {
+        if (lbText != null) {
+            lbText.setText(text);
+        }
+    }
+
     public void setClickListener(ClickListener listener) {
         this.listener = listener;
     }
@@ -102,6 +116,10 @@ public class Button implements MouseListener {
 
     public void setPreferredSize(Dimension dim) {
         pnRoot.setPreferredSize(dim);
+    }
+
+    public void setBorder(Border border) {
+        pnRoot.setBorder(border);
     }
 
     public void setFont(Font font) {
@@ -183,7 +201,7 @@ public class Button implements MouseListener {
         GridBagConstraints constr = new GridBagConstraints();
         constr.fill = GridBagConstraints.BOTH;
 
-        JLabel lbIcon = new JLabel(icon, SwingConstants.CENTER);
+        lbIcon = new JLabel(icon, SwingConstants.CENTER);
         pnRoot.add(lbIcon, constr);
     }
 

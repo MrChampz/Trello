@@ -35,6 +35,10 @@ public class MultilineLabel {
         taLabel.setPreferredSize(size);
     }
 
+    public String getText() {
+        return taLabel.getText();
+    }
+
     public void setText(String text) {
         taLabel.setText(text);
     }

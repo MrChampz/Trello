@@ -6,6 +6,16 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface UsuarioDAO {
+
+    /**
+     * Tenta fazer login, se houver sucesso, retorna o usuário logado.
+     * @param email Email do usuário.
+     * @param password Senha do usuário.
+     * @return O usuário logado em caso de sucesso, caso contrário, null.
+     * @throws SQLException Exceção lançada caso haja algum erro na consulta.
+     */
+    Usuario login(String email, String password) throws SQLException;
+
     /**
      * Salva um usuário no banco.
      * @param usuario Usuário a ser salvo.

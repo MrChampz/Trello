@@ -6,14 +6,24 @@ import java.awt.*;
 public class Card extends JPanel {
 
     private int round;
+    private Color shadowColor;
+
+    public Card(int round, Color cardColor) {
+        this(0, 0, round, cardColor, null);
+    }
 
     public Card(int round, Color cardColor, Color shadowColor) {
         this(0, 0, round, cardColor, shadowColor);
     }
 
+    public Card(int width, int height, int round, Color cardColor) {
+        this(width, height, round, cardColor, null);
+    }
+
     public Card(int width, int height, int round, Color cardColor, Color shadowColor) {
         this.round = round;
-        setupCard(width, height, cardColor, shadowColor);
+        this.shadowColor = shadowColor;
+        setupCard(width, height, cardColor);
     }
 
     @Override
@@ -26,16 +36,31 @@ public class Card extends JPanel {
         int w = getWidth();
         int h = getHeight();
 
-        Color fgColor = getForeground();
-        if (fgColor != null) {
+        if (shadowColor != null) {
             // Renderiza a sombra
-            graphics.setColor(fgColor);
+            graphics.setColor(shadowColor);
             graphics.drawRoundRect(0, 1, w - 2, h - 3, round, round);
         }
 
         // Renderiza o cartão
         graphics.setColor(getBackground());
         graphics.fillRoundRect(0, 0, w - 1, h - 2, round, round);
+    }
+
+    public int getRound() {
+        return round;
+    }
+
+    public void setRound(int round) {
+        this.round = round;
+    }
+
+    public Color getShadowColor() {
+        return shadowColor;
+    }
+
+    public void setShadowColor(Color shadowColor) {
+        this.shadowColor = shadowColor;
     }
 
     public int getPreferredWidth() {
@@ -83,13 +108,12 @@ public class Card extends JPanel {
         revalidate();
     }
 
-    private void setupCard(int width, int height, Color cardColor, Color shadowColor) {
+    private void setupCard(int width, int height, Color cardColor) {
         if (width != 0 && height != 0) {
             setPreferredSize(new Dimension(width, height));
         }
 
         setLayout(new GridBagLayout());
-        setForeground(shadowColor);
         setBackground(cardColor);
         setOpaque(false);
     }
